@@ -84,6 +84,11 @@
       "sourceType": "github",
       "skillPath": "skills/thread-writer-sms/SKILL.md",
       "computedHash": "9ca7045fba6bee6b98e95b56c5a70aa0e97196bdf98580f1129b0d27366106fa"
+    },
+    "russian-writer": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".claude/skills/russian-writer/SKILL.md"
     }
   }
 }
