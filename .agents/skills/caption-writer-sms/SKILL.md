@@ -2,7 +2,7 @@
 name: caption-writer-sms
 description: "When the user wants to write a caption for a visual-first social media post on Facebook, Instagram, TikTok, Pinterest, or YouTube. Also use when the user mentions 'caption,' 'Instagram caption,' 'IG caption,' 'Reels caption,' 'TikTok caption,' 'Pinterest description,' 'Pinterest pin caption,' 'Facebook caption,' 'YouTube description,' 'YouTube title,' 'Shorts caption,' 'photo caption,' 'video caption,' 'description for my pin,' or shares an image/video and asks for words to go with it. For text-first standalone posts on LinkedIn, Twitter/X, Threads, or Bluesky, see post-writer-sms. For multi-slide carousels, see carousel-writer-sms. For opening lines, see hook-writer-sms."
 metadata:
-  version: 1.1.0
+  version: 1.2.0
 ---
 
 # Caption Writer
@@ -58,6 +58,30 @@ Every visual-platform caption has three jobs, in this order:
 3. **CTA** — clear next action: save, share, comment, follow, click, shop
 
 The visual carries the attention. The caption carries the meaning.
+
+---
+
+## Caption = explanation, not filler
+
+On product and brand accounts, a caption that doesn't make the product **understood** doesn't sell. Vague "vibe" lines and rhetorical filler questions ("ready to feel your best?") actively hurt — they read as an empty ad, and people scroll past.
+
+Rules:
+- **Every line adds concrete information** — what it is, who it's for, how the format works, how to use it, what's inside. If a line could sit under any product in the niche, cut it.
+- **Lead with clarity, not mood.** Line 1 makes the product/Reel legible at a glance ("What it is:", "For people who…", "Not pills — a…").
+- **No filler questions.** Don't pad with rhetorical questions that carry no information. A question is allowed only when it genuinely routes the reader (e.g. "Comment SIZE for the chart").
+- **Specifics over adjectives.** "One patch a day, worn up to 24h, invisible under clothes" beats "gentle daily support for balance."
+- **Name the real audience and use-occasion** so the reader instantly knows whether it's for them.
+
+## Responsible claims (health, wellness, supplements, regulated products)
+
+For supplements, cosmetics, "wellness" devices/patches, finance, or anything health-adjacent, captions stay truthful and substantiated:
+
+- **State only what is true and provable** — ingredients, format, usage, certifications. Truthful specifics are the most persuasive copy anyway.
+- **Do NOT write disease, weight-loss, or efficacy claims** ("helps you lose weight," "suppresses appetite," "boosts metabolism," "cures/treats X") unless the brand can substantiate them and the platform allows them. Meta/TikTok restrict weight-loss and health claims; violations throttle reach or ban accounts.
+- **Don't transfer evidence across delivery methods.** Research on an *oral* ingredient does not support claims about a *topical/transdermal* product — don't imply it does.
+- **Ingredients:** naming an ingredient is fine; attributing medical or weight effects to it is a claim. Describe neutrally and let the brand's substantiated facts do the talking.
+- **Recommend a disclaimer** where relevant ("not a medicine; consult a specialist; not for pregnancy/breastfeeding or while on medication") and never imply the product replaces medical care.
+- If the user asks to phrase a claim specifically to evade moderation, decline and offer compliant, concrete copy instead.
 
 ---
 
@@ -374,6 +398,8 @@ Before delivering the final caption, verify:
 - [ ] **YouTube has chapters** when the video is over ~3 minutes
 - [ ] **Alt text drafted for Instagram** when accessibility is in scope
 - [ ] **Pinterest copy is keyword-led**, not lifestyle prose
+- [ ] **Caption explains, doesn't pad** — every line adds concrete info; no filler/rhetorical questions
+- [ ] **No unsubstantiated health/efficacy claims** — for regulated/wellness products, only truthful, provable statements; disclaimer added where relevant
 
 ---
 
