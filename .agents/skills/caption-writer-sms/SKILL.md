@@ -72,6 +72,22 @@ Rules:
 - **Specifics over adjectives.** "One patch a day, worn up to 24h, invisible under clothes" beats "gentle daily support for balance."
 - **Name the real audience and use-occasion** so the reader instantly knows whether it's for them.
 
+## Direct-response essentials (product / sales captions)
+
+A caption that lists features but never says **why the viewer needs the product** does not sell. Every product caption answers, fast: *what is it, who is it for, what problem does it solve, why act.*
+
+- **Open on the customer's pain or desire**, not the product. The hook is their problem in their words ("Craving sweets every evening?"), not a product fact.
+- **Position the product as the solution** to that exact pain — lead with its intended benefit/purpose, not its format.
+- **Name the audience** explicitly so the right person feels "this is for me."
+- **Features serve the benefit.** Specs (format, duration, how-to) are proof the fix is easy — never the headline.
+- **Cut desire-killers.** Hedges like "works with your habits, not instead of them" or "nothing to take on schedule" defuse the sale — remove them.
+- **Don't define the product by what it is NOT** ("not a pill, not a powder"). Define it by what it does and who it's for.
+- **One clear CTA** (link in bio / save / comment) — never a vague rhetorical question.
+
+### Never invent product facts
+
+Use only specs the user has confirmed (duration, dosage, ingredients, certifications). If a spec is unknown, ask — never fill the gap with a plausible-sounding number. Fabricated specs (e.g. claiming "24h" when it is "up to 8h") destroy trust and can be illegal.
+
 ## Responsible claims (health, wellness, supplements, regulated products)
 
 For supplements, cosmetics, "wellness" devices/patches, finance, or anything health-adjacent, captions stay truthful and substantiated:
