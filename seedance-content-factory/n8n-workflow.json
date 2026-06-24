@@ -1,0 +1,303 @@
+{
+  "name": "Seedance Content Factory",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start-node",
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c1",
+              "name": "LLM_KEY",
+              "value": "PASTE_OPENROUTER_KEY",
+              "type": "string"
+            },
+            {
+              "id": "c2",
+              "name": "LLM_MODEL",
+              "value": "deepseek/deepseek-chat",
+              "type": "string"
+            },
+            {
+              "id": "c3",
+              "name": "FAL_KEY",
+              "value": "PASTE_FAL_KEY",
+              "type": "string"
+            },
+            {
+              "id": "c4",
+              "name": "FAL_MODEL",
+              "value": "bytedance/seedance-2.0/fast/text-to-video",
+              "type": "string"
+            },
+            {
+              "id": "c5",
+              "name": "resolution",
+              "value": "720p",
+              "type": "string"
+            },
+            {
+              "id": "c6",
+              "name": "duration",
+              "value": "5",
+              "type": "string"
+            },
+            {
+              "id": "c7",
+              "name": "aspectRatio",
+              "value": "16:9",
+              "type": "string"
+            },
+            {
+              "id": "c8",
+              "name": "peSystem",
+              "value": "You are a senior text-to-video prompt engineer for ByteDance Seedance 2.0. Convert the user's idea into ONE vivid, cinematic English prompt. Cover, in order: subject, action, setting, camera movement, lighting, mood, and visual style. Be concrete and specific. Maximum 110 words. Output ONLY the prompt text - no preamble, no quotes, no markdown.",
+              "type": "string"
+            },
+            {
+              "id": "c9",
+              "name": "bsSystem",
+              "value": "You are a brand art director. Rewrite the draft video prompt so it strictly follows the BRAND PROFILE: enforce the brand color palette, tone, mood, lighting and any do/don't rules. Keep the same scene and action. Output ONLY the final English prompt, maximum 110 words, no preamble, no quotes.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "config-node",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "i1",
+              "name": "idea",
+              "value": "A 5-second cinematic product reveal of our new matte-black minimalist ceramic coffee mug on a stone table, soft steam rising.",
+              "type": "string"
+            },
+            {
+              "id": "i2",
+              "name": "brandProfile",
+              "value": "Brand: NORD. Aesthetic: Scandinavian minimalism. Palette: matte black, warm grey, soft cream, single muted sage accent. Mood: calm, premium, quiet confidence. Light: soft natural daylight, gentle shadows. Avoid: bright saturated colors, clutter, busy backgrounds, glossy plastic looks.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "inputs-node",
+      "name": "Inputs",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Config').item.json.LLM_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $('Config').item.json.LLM_MODEL, messages: [ { role: 'system', content: $('Config').item.json.peSystem }, { role: 'user', content: 'IDEA: ' + $('Inputs').item.json.idea + ' --- BRAND PROFILE: ' + $('Inputs').item.json.brandProfile } ] }) }}",
+        "options": {}
+      },
+      "id": "pe-node",
+      "name": "Prompt Engineer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Config').item.json.LLM_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $('Config').item.json.LLM_MODEL, messages: [ { role: 'system', content: $('Config').item.json.bsSystem }, { role: 'user', content: 'DRAFT PROMPT: ' + $('Prompt Engineer').item.json.choices[0].message.content + ' --- BRAND PROFILE: ' + $('Inputs').item.json.brandProfile } ] }) }}",
+        "options": {}
+      },
+      "id": "bs-node",
+      "name": "Brand Stylist",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const cfg = $('Config').first().json;\nconst prompt = $('Brand Stylist').first().json.choices[0].message.content.trim();\nconst model = cfg.FAL_MODEL;\nconst headers = { 'Authorization': 'Key ' + cfg.FAL_KEY, 'Content-Type': 'application/json' };\n\n// 1) submit job to fal queue\nconst submit = await this.helpers.httpRequest({\n  method: 'POST',\n  url: 'https://queue.fal.run/' + model,\n  headers,\n  body: {\n    prompt: prompt,\n    resolution: cfg.resolution,\n    duration: String(cfg.duration),\n    aspect_ratio: cfg.aspectRatio,\n    generate_audio: true\n  },\n  json: true\n});\n\nconst statusUrl = submit.status_url;\nconst responseUrl = submit.response_url;\n\n// 2) poll until done (5s interval, ~7.5 min max)\nlet st = {};\nfor (let i = 0; i < 90; i++) {\n  await new Promise(r => setTimeout(r, 5000));\n  st = await this.helpers.httpRequest({ method: 'GET', url: statusUrl, headers, json: true });\n  if (st.status === 'COMPLETED') break;\n  if (st.status === 'FAILED' || st.status === 'ERROR') {\n    throw new Error('fal job failed: ' + JSON.stringify(st));\n  }\n}\n\n// 3) fetch the final result\nconst res = await this.helpers.httpRequest({ method: 'GET', url: responseUrl, headers, json: true });\n\nreturn [{ json: {\n  videoUrl: (res.video || {}).url,\n  seed: res.seed,\n  requestId: submit.request_id,\n  finalPrompt: prompt\n} }];\n"
+      },
+      "id": "seedance-node",
+      "name": "Seedance 2.0",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "o1",
+              "name": "videoUrl",
+              "value": "={{ $json.videoUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "o2",
+              "name": "finalPrompt",
+              "value": "={{ $json.finalPrompt }}",
+              "type": "string"
+            },
+            {
+              "id": "o3",
+              "name": "seed",
+              "value": "={{ $json.seed }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "output-node",
+      "name": "Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1560,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Inputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inputs": {
+      "main": [
+        [
+          {
+            "node": "Prompt Engineer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt Engineer": {
+      "main": [
+        [
+          {
+            "node": "Brand Stylist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brand Stylist": {
+      "main": [
+        [
+          {
+            "node": "Seedance 2.0",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seedance 2.0": {
+      "main": [
+        [
+          {
+            "node": "Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templatecredsSetupCompleted": false
+  }
+}
