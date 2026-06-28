@@ -2,23 +2,29 @@
 """
 Распределение фото по 9 аккаунтам Pinterest с гарантией «1 фото = 1 раз».
 
-Как работает:
-  1. Ты кидаешь фото в папку серии, например  photos/series/series-01/
-  2. Запускаешь:  python3 distribute.py series-01
-  3. Скрипт:
-       - считает хэш (отпечаток) каждого фото;
-       - проверяет хэш по реестру ledger.csv — если фото уже использовалось
-         в ЛЮБОЙ серии или на ЛЮБОМ аккаунте, оно пропускается (повтор!);
-       - раздаёт новые фото по аккаунтам по кругу (round-robin), по одному
-         на аккаунт, пока фото не закончатся;
-       - перемещает фото в photos/published/<серия>/<аккаунт>/;
-       - дописывает строки в ledger.csv;
-       - сохраняет план публикации в plans/<серия>.csv
-         (фото -> аккаунт), готовый для загрузки в postmypost.
+Можно брать фото:
+  - из стандартной папки серии  photos/series/series-01/
+  - или из любой папки по пути   --from "/путь/к/папке"
+  - или пачкой из таблицы sources.csv  (см. run_sources.py)
+
+Что делает:
+  1. Считает хэш (отпечаток) каждого фото.
+  2. Сверяет с реестром ledger.csv — фото, использованное в ЛЮБОЙ серии или на
+     ЛЮБОМ аккаунте, пропускается (повтор!).
+  3. Раздаёт новые фото по аккаунтам по кругу (round-robin).
+  4. Перемещает фото в photos/published/<серия>/<аккаунт>/.
+  5. Дописывает строки в ledger.csv со статусом «assigned» (ждёт проверки).
+  6. Сохраняет план серии в plans/<серия>.csv.
+
+Статусы публикации (колонка status в ledger.csv):
+  assigned   — разложено, ждёт твоей проверки в dashboard.html
+  approved   — ты подтвердила (см. approve.py) — можно публиковать
+  published  — опубликовано через postmypost
 
 Запуск:
-  python3 distribute.py series-01            # распределить серию
-  python3 distribute.py series-01 --dry-run  # показать план, ничего не трогая
+  python3 distribute.py series-01
+  python3 distribute.py series-01 --from "/путь/к/папке"
+  python3 distribute.py series-01 --dry-run
 """
 
 import csv
@@ -78,27 +84,20 @@ def append_ledger(rows: list[dict]) -> None:
         writer.writerows(rows)
 
 
-def main() -> None:
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    dry_run = "--dry-run" in sys.argv
-    if not args:
-        sys.exit("Укажи серию, напр.:  python3 distribute.py series-01")
-
-    series = args[0]
-    src = SERIES_DIR / series
+def distribute_folder(series: str, src: Path, dry_run: bool = False) -> dict:
+    """Разложить фото из папки src по аккаунтам. Возвращает сводку."""
     if not src.is_dir():
-        sys.exit(f"Папки серии нет: {src}")
+        sys.exit(f"Папки нет: {src}")
 
     accounts = load_accounts()
     used = load_used_hashes()
-
     photos = sorted(p for p in src.iterdir()
                     if p.is_file() and p.suffix.lower() in IMAGE_EXT)
     if not photos:
         sys.exit(f"В {src} нет фото.")
 
     plan, ledger_rows, skipped = [], [], []
-    seen_in_batch = set()  # дубликаты внутри самой серии
+    seen_in_batch: set[str] = set()
     slot = 0
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
@@ -116,7 +115,7 @@ def main() -> None:
                             "series": series, "account": account,
                             "assigned_at": now, "status": "assigned"})
 
-    print(f"\nСерия: {series}")
+    print(f"\nСерия: {series}  (источник: {src})")
     print(f"Аккаунтов: {len(accounts)} | Фото в папке: {len(photos)} | "
           f"К публикации: {len(plan)} | Пропущено (повтор): {len(skipped)}\n")
     for item in plan:
@@ -128,12 +127,11 @@ def main() -> None:
 
     if dry_run:
         print("\n[--dry-run] Ничего не изменено.")
-        return
+        return {"assigned": 0, "skipped": len(skipped)}
     if not plan:
         print("\nНовых фото нет — реестр не тронут.")
-        return
+        return {"assigned": 0, "skipped": len(skipped)}
 
-    # Переместить фото и записать план серии
     PLANS_DIR.mkdir(exist_ok=True)
     plan_csv = PLANS_DIR / f"{series}.csv"
     with plan_csv.open("w", encoding="utf-8", newline="") as f:
@@ -150,7 +148,27 @@ def main() -> None:
     append_ledger(ledger_rows)
     print(f"\nГотово. План: {plan_csv.relative_to(ROOT)}")
     print(f"Фото перемещены в photos/published/{series}/<аккаунт>/")
-    print("Реестр ledger.csv обновлён.")
+    print("Статус: assigned (ждёт проверки в dashboard.html).")
+    return {"assigned": len(plan), "skipped": len(skipped)}
+
+
+def main() -> None:
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    dry_run = "--dry-run" in sys.argv
+    if not args:
+        sys.exit("Укажи серию, напр.:  python3 distribute.py series-01")
+    series = args[0]
+
+    src = None
+    if "--from" in sys.argv:
+        i = sys.argv.index("--from")
+        if i + 1 >= len(sys.argv):
+            sys.exit("После --from укажи путь к папке.")
+        src = Path(sys.argv[i + 1]).expanduser()
+    else:
+        src = SERIES_DIR / series
+
+    distribute_folder(series, src, dry_run=dry_run)
 
 
 if __name__ == "__main__":
